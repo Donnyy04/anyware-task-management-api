@@ -46,7 +46,3 @@ Use the access token as a Bearer token in Swagger's Authorize dialog. Task lists
 - Admin user management is role-protected; task routes remain scoped to the authenticated user's own tasks.
 - The queue is in memory, suitable for this exercise; queued work is lost if the API process stops.
 - Global middleware returns safe JSON errors and logs unexpected failures; Serilog writes structured logs to the console.
-
-## Walkthrough video
-
-Record a short screen walkthrough showing the architecture, authentication and authorization, admin routes, task endpoints, Redis behavior, the background worker, and the business rules. A timed script and recording checklist are in [WALKTHROUGH.md](WALKTHROUGH.md).
