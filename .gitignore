@@ -1,0 +1,23 @@
+# Build outputs
+**/bin/
+**/obj/
+**/TestResults/
+
+# IDE and user-specific files
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Local secrets and runtime data
+.env
+.env.*
+!.env.example
+appsettings.Local.json
+*.log
+
+# OS files
+Thumbs.db
+Desktop.ini
