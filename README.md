@@ -68,7 +68,7 @@ The React 19 + TypeScript single-page app is in `frontend/`. It uses Vite, React
 5. Start the frontend with `npm run dev`. Open the URL Vite prints, normally `http://localhost:5173`.
 6. Register a normal account to manage tasks. To use the admin area, sign in with the seeded administrator below.
 
-Build the frontend with `cd frontend` and `npm run build`.
+Build the frontend with `cd frontend` and `npm run build`. Run the frontend unit and component tests from the same folder with `npm test`.
 
 ### Optional: start all services with Docker Compose
 
@@ -122,6 +122,7 @@ If the existing administrator password is unavailable, `dotnet run --project too
 - Clear cached server state on logout and show an actionable message on the login screen after an expired session.
 - Added container builds for the API and the static frontend so the whole stack can be brought up with one Compose command.
 - Added server-side task pagination with filtered counts, to keep list requests small as a user's task history grows.
+- Added Vitest and React Testing Library coverage for authentication form validation, readable login errors, token headers, and refresh-token retries.
 
 ### Assumptions
 
