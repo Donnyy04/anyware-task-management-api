@@ -92,5 +92,12 @@ public sealed class TaskServiceTests
         public Task<bool> ExistsWithTitleOnDateAsync(Guid userId, string title, DateTime date, CancellationToken cancellationToken = default) => Task.FromResult(DuplicateExists || Items.Any(x => x.UserId == userId && x.Title == title && x.CreatedAt.Date == date.Date));
         public Task AddAsync(TaskItem task, CancellationToken cancellationToken = default) { Items.Add(task); return Task.CompletedTask; }
         public Task UpdateAsync(TaskItem task, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<bool> TryAdvancePendingAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            var task = Items.FirstOrDefault(x => x.Id == id);
+            if (task is null || task.Status != DomainTaskStatus.Pending) return Task.FromResult(false);
+            task.UpdateStatus(DomainTaskStatus.InProgress);
+            return Task.FromResult(true);
+        }
     }
 }

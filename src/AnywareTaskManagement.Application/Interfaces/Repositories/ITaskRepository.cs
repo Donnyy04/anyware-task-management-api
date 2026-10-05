@@ -31,4 +31,8 @@ public interface ITaskRepository
     Task UpdateAsync(
         TaskItem task,
         CancellationToken cancellationToken = default);
+
+    Task<bool> TryAdvancePendingAsync(
+        Guid id,
+        CancellationToken cancellationToken = default);
 }

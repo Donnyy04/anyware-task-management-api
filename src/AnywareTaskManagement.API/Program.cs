@@ -31,6 +31,9 @@ builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 builder.Services.AddHostedService<TaskBackgroundWorker>();
 builder.Services.AddHostedService<AdminSeeder>();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddCors(options => options.AddPolicy("Frontend", policy =>
+    policy.WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? ["http://localhost:5173"])
+        .AllowAnyHeader().AllowAnyMethod()));
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Configure Jwt:Key with a secret of at least 32 characters.");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o => { o.TokenValidationParameters = new TokenValidationParameters { ValidateIssuer = true, ValidIssuer = builder.Configuration["Jwt:Issuer"], ValidateAudience = true, ValidAudience = builder.Configuration["Jwt:Issuer"], ValidateIssuerSigningKey = true, IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)), ValidateLifetime = true, ClockSkew = TimeSpan.FromSeconds(30), NameClaimType = System.Security.Claims.ClaimTypes.NameIdentifier, RoleClaimType = System.Security.Claims.ClaimTypes.Role }; });
 builder.Services.AddAuthorization();
@@ -40,9 +43,23 @@ builder.Services.AddSwaggerGen(o => { o.SwaggerDoc("v1", new OpenApiInfo { Title
 
 var app = builder.Build();
 app.UseMiddleware<ApiExceptionMiddleware>();
+app.UseStatusCodePages(async statusContext =>
+{
+    var response = statusContext.HttpContext.Response;
+    var status = response.StatusCode;
+    var (title, detail) = status switch
+    {
+        StatusCodes.Status401Unauthorized => ("Unauthorized", "Sign in again or provide a valid access token."),
+        StatusCodes.Status403Forbidden => ("Forbidden", "You do not have permission to access this resource."),
+        StatusCodes.Status404NotFound => ("Not found", "The requested resource was not found."),
+        _ => ("Request failed", "The request could not be completed.")
+    };
+    await response.WriteAsJsonAsync(new { status, title, detail });
+});
 app.UseSerilogRequestLogging();
 if (app.Environment.IsDevelopment()) { app.UseSwagger(); app.UseSwaggerUI(); }
 app.UseHttpsRedirection();
+app.UseCors("Frontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

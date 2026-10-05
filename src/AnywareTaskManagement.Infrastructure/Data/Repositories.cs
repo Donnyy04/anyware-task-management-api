@@ -21,4 +21,7 @@ public sealed class TaskRepository(ApplicationDbContext db) : ITaskRepository
     public Task<bool> ExistsWithTitleOnDateAsync(Guid userId, string title, DateTime date, CancellationToken ct = default) => db.Tasks.AnyAsync(x => x.UserId == userId && x.Title == title && x.CreatedAt >= date.Date && x.CreatedAt < date.Date.AddDays(1), ct);
     public async Task AddAsync(TaskItem task, CancellationToken ct = default) { db.Tasks.Add(task); await db.SaveChangesAsync(ct); }
     public async Task UpdateAsync(TaskItem task, CancellationToken ct = default) { db.Tasks.Update(task); await db.SaveChangesAsync(ct); }
+    public async Task<bool> TryAdvancePendingAsync(Guid id, CancellationToken ct = default) => await db.Tasks
+        .Where(x => x.Id == id && x.Status == AnywareTaskManagement.Domain.Enums.TaskStatus.Pending)
+        .ExecuteUpdateAsync(update => update.SetProperty(x => x.Status, AnywareTaskManagement.Domain.Enums.TaskStatus.InProgress), ct) == 1;
 }
