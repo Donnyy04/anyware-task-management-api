@@ -18,6 +18,12 @@ public interface ITaskRepository
         Guid userId,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<TaskItem>> GetPageByUserIdAsync(Guid userId, int skip, int take,
+        AnywareTaskManagement.Domain.Enums.TaskStatus? status, string? titleSearch, CancellationToken cancellationToken = default);
+
+    Task<int> CountByUserIdAsync(Guid userId, AnywareTaskManagement.Domain.Enums.TaskStatus? status,
+        string? titleSearch, CancellationToken cancellationToken = default);
+
     Task<bool> ExistsWithTitleOnDateAsync(
         Guid userId,
         string title,

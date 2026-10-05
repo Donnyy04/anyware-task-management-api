@@ -34,6 +34,16 @@ public sealed class TaskService(ITaskRepository tasks, ICurrentUserService curre
     public async Task<TaskResponse> CreateAsync(CreateTaskRequest r, CancellationToken ct = default) { var userId = current.UserId ?? throw new UnauthorizedAccessException(); if (string.IsNullOrWhiteSpace(r.Title) || r.Title.Trim().Length > 200) throw new ArgumentException("Title is required and must be at most 200 characters."); if ((r.Description?.Length ?? 0) > 2000) throw new ArgumentException("Description must be at most 2000 characters."); if (!Enum.IsDefined(r.Priority)) throw new ArgumentException("Invalid task priority."); if (await tasks.ExistsWithTitleOnDateAsync(userId, r.Title.Trim(), DateTime.UtcNow, ct)) throw new InvalidOperationException("A task with this title already exists today."); var t = new TaskItem(r.Title.Trim(), r.Description?.Trim() ?? "", r.Priority, userId); await tasks.AddAsync(t, ct); await queue.QueueAsync(t.Id, ct); return Map(t); }
     public async Task<TaskResponse> GetByIdAsync(Guid id, CancellationToken ct = default) { var userId = current.UserId ?? throw new UnauthorizedAccessException(); var cached = await cache.GetAsync<TaskResponse>(CachePrefix + id, ct); if (cached is not null) { if (cached.UserId != userId) throw new KeyNotFoundException("Task not found."); return cached; } var t = await tasks.GetByIdAsync(id, ct); if (t is null || t.UserId != userId) throw new KeyNotFoundException("Task not found."); var response = Map(t); await cache.SetAsync(CachePrefix + id, response, TimeSpan.FromMinutes(10), ct); return response; }
     public async Task<IReadOnlyList<TaskResponse>> GetAllAsync(CancellationToken ct = default) { var userId = current.UserId ?? throw new UnauthorizedAccessException(); return (await tasks.GetByUserIdAsync(userId, ct)).Select(Map).ToArray(); }
+    public async Task<TaskPageResponse> GetPageAsync(int page, int pageSize, DomainTaskStatus? status, string? titleSearch, CancellationToken ct = default)
+    {
+        var userId = current.UserId ?? throw new UnauthorizedAccessException();
+        var safePageSize = Math.Clamp(pageSize, 1, 100);
+        var safePage = Math.Clamp(page, 1, int.MaxValue / safePageSize);
+        var search = string.IsNullOrWhiteSpace(titleSearch) ? null : titleSearch.Trim();
+        var items = await tasks.GetPageByUserIdAsync(userId, (safePage - 1) * safePageSize, safePageSize, status, search, ct);
+        var count = await tasks.CountByUserIdAsync(userId, status, search, ct);
+        return new TaskPageResponse { Items = items.Select(Map).ToArray(), PageNumber = safePage, PageSize = safePageSize, TotalCount = count };
+    }
     public async Task<TaskResponse> UpdateStatusAsync(Guid id, UpdateTaskStatusRequest r, CancellationToken ct = default) { var userId = current.UserId ?? throw new UnauthorizedAccessException(); if (!Enum.IsDefined(r.Status)) throw new ArgumentException("Invalid task status."); var t = await tasks.GetByIdAsync(id, ct); if (t is null || t.UserId != userId) throw new KeyNotFoundException("Task not found."); t.UpdateStatus(r.Status); await tasks.UpdateAsync(t, ct); await cache.RemoveAsync(CachePrefix + id, ct); return Map(t); }
     private static TaskResponse Map(TaskItem t) => new() { Id=t.Id, Title=t.Title, Description=t.Description, Status=t.Status, Priority=t.Priority, CreatedAt=t.CreatedAt, UserId=t.UserId };
 }

@@ -57,7 +57,7 @@ Use the access token as a Bearer token in Swagger's Authorize dialog. Task lists
 
 ## Stage 2: React frontend
 
-The React 19 + TypeScript single-page app is in `frontend/`. It uses Vite, React Router, TanStack Query for server state, and React Hook Form + Zod for client validation.
+The React 19 + TypeScript single-page app is in `frontend/`. It uses Vite, React Router, TanStack Query for server state, and React Hook Form + Zod for client validation. The task list uses server-side pagination, status filtering, and title search.
 
 ### Run the backend and frontend together
 
@@ -107,6 +107,7 @@ The frontend has no API URL embedded in components. A sample environment file is
 - Added an atomic, conditional database update for the background worker. It advances a task only if its persisted status is still `Pending`, so a concurrent user status update is not overwritten.
 - Enforced the task description maximum length (2,000 characters) on the API, matching the database limit and frontend validation.
 - Updated the existing Docker Compose stack with API and frontend services plus SQL Server and Redis health checks, allowing the full application to start together.
+- Added a paged task endpoint that applies the status/title filters and priority/creation ordering in the database. The original array endpoint remains available.
 
 ### Enhancements
 
@@ -117,6 +118,7 @@ The frontend has no API URL embedded in components. A sample environment file is
 - Keep the background worker from overwriting a non-Pending status after its processing delay.
 - Clear cached server state on logout and show an actionable message on the login screen after an expired session.
 - Added container builds for the API and the static frontend so the whole stack can be brought up with one Compose command.
+- Added server-side task pagination with filtered counts, to keep list requests small as a user's task history grows.
 
 ### Assumptions
 

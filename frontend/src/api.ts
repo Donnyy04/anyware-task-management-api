@@ -1,4 +1,4 @@
-import type { AuthResponse, CreateTaskRequest, LoginRequest, RegisterRequest, TaskItem, UpdateTaskStatusRequest, User } from './types';
+import type { AuthResponse, CreateTaskRequest, LoginRequest, RegisterRequest, TaskItem, TaskPage, TaskStatus, UpdateTaskStatusRequest, User } from './types';
 
 const API_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:5154/api').replace(/\/$/, '');
 const ACCESS = 'anyware.access';
@@ -49,7 +49,12 @@ export const api = {
   register: (data: RegisterRequest) => request<AuthResponse>('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
   login: (data: LoginRequest) => request<AuthResponse>('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
   me: () => request<User>('/auth/me'),
-  listTasks: () => request<TaskItem[]>('/tasks'),
+  listTasks: (page: number, status: TaskStatus | 'All', search: string) => {
+    const query = new URLSearchParams({ page: String(page), pageSize: '10' });
+    if (status !== 'All') query.set('status', status);
+    if (search.trim()) query.set('search', search.trim());
+    return request<TaskPage>(`/tasks/page?${query.toString()}`);
+  },
   getTask: (id: string) => request<TaskItem>(`/tasks/${id}`),
   createTask: (data: CreateTaskRequest) => request<TaskItem>('/tasks', { method: 'POST', body: JSON.stringify(data) }),
   updateTaskStatus: (id: string, data: UpdateTaskStatusRequest) => request<TaskItem>(`/tasks/${id}/status`, { method: 'PATCH', body: JSON.stringify(data) }),

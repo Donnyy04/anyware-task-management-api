@@ -3,6 +3,7 @@ export type TaskPriority = 'Low' | 'Medium' | 'High';
 export type UserRole = 'User' | 'Admin';
 
 export interface TaskItem { id: string; title: string; description: string; status: TaskStatus; priority: TaskPriority; createdAt: string; userId: string }
+export interface TaskPage { items: TaskItem[]; pageNumber: number; pageSize: number; totalCount: number }
 export interface User { id: string; name: string; email: string; role: UserRole; createdAt: string }
 export interface AuthResponse { accessToken: string; refreshToken: string; accessTokenExpiresAt: string }
 export interface RegisterRequest { name: string; email: string; password: string }

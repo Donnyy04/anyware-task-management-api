@@ -21,6 +21,9 @@ public interface ITaskService
     Task<IReadOnlyList<TaskResponse>> GetAllAsync(
         CancellationToken cancellationToken = default);
 
+    Task<TaskPageResponse> GetPageAsync(int page, int pageSize, AnywareTaskManagement.Domain.Enums.TaskStatus? status,
+        string? titleSearch, CancellationToken cancellationToken = default);
+
     Task<TaskResponse> UpdateStatusAsync(
         Guid taskId,
         UpdateTaskStatusRequest request,

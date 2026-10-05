@@ -89,6 +89,10 @@ public sealed class TaskServiceTests
         public bool DuplicateExists { get; set; }
         public Task<TaskItem?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(Items.FirstOrDefault(x => x.Id == id));
         public Task<IReadOnlyList<TaskItem>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<TaskItem>>(Items.Where(x => x.UserId == userId).ToArray());
+        public Task<IReadOnlyList<TaskItem>> GetPageByUserIdAsync(Guid userId, int skip, int take, DomainTaskStatus? status, string? titleSearch, CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<TaskItem>>(Items.Where(x => x.UserId == userId && (status is null || x.Status == status) && (string.IsNullOrWhiteSpace(titleSearch) || x.Title.Contains(titleSearch, StringComparison.OrdinalIgnoreCase))).OrderByDescending(x => x.Priority).ThenBy(x => x.CreatedAt).Skip(skip).Take(take).ToArray());
+        public Task<int> CountByUserIdAsync(Guid userId, DomainTaskStatus? status, string? titleSearch, CancellationToken cancellationToken = default) =>
+            Task.FromResult(Items.Count(x => x.UserId == userId && (status is null || x.Status == status) && (string.IsNullOrWhiteSpace(titleSearch) || x.Title.Contains(titleSearch, StringComparison.OrdinalIgnoreCase))));
         public Task<bool> ExistsWithTitleOnDateAsync(Guid userId, string title, DateTime date, CancellationToken cancellationToken = default) => Task.FromResult(DuplicateExists || Items.Any(x => x.UserId == userId && x.Title == title && x.CreatedAt.Date == date.Date));
         public Task AddAsync(TaskItem task, CancellationToken cancellationToken = default) { Items.Add(task); return Task.CompletedTask; }
         public Task UpdateAsync(TaskItem task, CancellationToken cancellationToken = default) => Task.CompletedTask;
