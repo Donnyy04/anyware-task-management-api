@@ -10,6 +10,11 @@ services:
       - "1433:1433"
     volumes:
       - sqlserver_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q \"SELECT 1\" -C"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
     restart: unless-stopped
 
   redis:
@@ -19,6 +24,45 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: src/AnywareTaskManagement.API/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: 8080
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=AnywareTaskManagementDb;User Id=sa;Password=${ANYWARE_SQL_PASSWORD:?Set ANYWARE_SQL_PASSWORD in your .env file};TrustServerCertificate=True;Encrypt=False"
+      ConnectionStrings__Redis: redis:6379
+      Jwt__Key: "${ANYWARE_JWT_KEY:?Set ANYWARE_JWT_KEY in your .env file}"
+      SeedAdmin__Email: admin@example.com
+      SeedAdmin__Password: "${ANYWARE_SEED_ADMIN_PASSWORD:?Set ANYWARE_SEED_ADMIN_PASSWORD in your .env file}"
+      Cors__AllowedOrigins__0: http://localhost:5173
+    ports:
+      - "5154:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:5154/api
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
     restart: unless-stopped
 
 volumes:
