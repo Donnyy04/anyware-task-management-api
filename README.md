@@ -133,12 +133,4 @@ If the existing administrator password is unavailable, `dotnet run --project too
 
 ### AI tool use
 
-OpenAI Codex was used to inspect the supplied task requirements and existing API, draft the React UI and API client, make the CORS and background-worker changes, and check the strict frontend build. I reviewed the API contracts and the submitted code; I will explain the implementation in my own words during the walkthrough.
-
-### Walkthrough checklist (record in your own words; keep it under 10 minutes)
-
-- Register, sign in, create a task, demonstrate a same-day duplicate-title message, and show Pending automatically move to InProgress.
-- Open a task, update its status, then sign in as the seeded admin to create and delete a disposable user.
-- Sign in as a normal user and open `/admin/users` to demonstrate Access denied.
-- Briefly show `frontend/src` structure, the centralized API client, token storage/refresh/401 behavior, protected routes, polling, and the backend changes above.
-- Share the video with “Anyone with the link can view” and reply to the original email with the repository and video links.
+ChatGPT was used to inspect the supplied task requirements and existing API, draft the React UI and API client, make the CORS and background-worker changes, and check the strict frontend build. I reviewed the API contracts and the submitted code; I will explain the implementation in my own words during the walkthrough.
