@@ -18,16 +18,15 @@ An ASP.NET Core 8 task management API using a DDD-style four-project structure: 
 
    `.env` is excluded from Git, so these secrets are not uploaded. If you already have a SQL Server Docker volume, keep the SQL password it was originally created with; changing `.env` does not change the password inside an existing database volume.
 
-2. **Give the API its local connection and signing settings.** .NET user secrets stores these settings on your computer, outside the repository. Run the following from the repository folder. Replace each capitalized placeholder with your own value; the SQL password must be the same one you entered in `.env`.
+2. **Give the API its local connection and signing settings.** The API project already has a `UserSecretsId`; .NET user secrets stores the settings on your computer, outside the repository. Run the following from the repository folder. Replace each capitalized placeholder with your own value; the SQL password must be the same one you entered in `.env`.
 
    ```powershell
-   dotnet user-secrets init --project src/AnywareTaskManagement.API
    dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost,1433;Database=AnywareTaskManagementDb;User Id=sa;Password=YOUR_SQL_PASSWORD;TrustServerCertificate=True;Encrypt=False" --project src/AnywareTaskManagement.API
    dotnet user-secrets set "Jwt:Key" "YOUR_RANDOM_SECRET_KEY_AT_LEAST_32_CHARACTERS" --project src/AnywareTaskManagement.API
    dotnet user-secrets set "SeedAdmin:Password" "YOUR_STRONG_ADMIN_PASSWORD" --project src/AnywareTaskManagement.API
    ```
 
-   Run `dotnet user-secrets init` only once for this project. The SQL connection string lets the API connect to your Docker SQL Server; `Jwt:Key` is a random signing secret with at least 32 characters; `SeedAdmin:Password` is the password for the admin account when it is first seeded. User secrets stay outside the repository and are not uploaded to GitHub.
+   The SQL connection string lets the API connect to your Docker SQL Server; `Jwt:Key` is a random signing secret with at least 32 characters; `SeedAdmin:Password` is the password for the admin account when it is first seeded. User secrets stay outside the repository and are not uploaded to GitHub.
 3. Start only SQL Server and Redis for local development from the repository root: `docker compose up -d sqlserver redis`.
 4. Run the API: `dotnet run --project src/AnywareTaskManagement.API`.
 5. Open the Swagger URL printed by ASP.NET Core, usually `http://localhost:5154/swagger`. The initial EF migration is applied at startup.
