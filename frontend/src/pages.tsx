@@ -18,7 +18,7 @@ const taskSchema = z.object({ title: z.string().trim().min(1, 'Title is required
 type TaskValues = z.infer<typeof taskSchema>;
 
 function ErrorText({ message }: { message?: string }) { return message ? <span className="field-error">{message}</span> : null; }
-function FormError({ error }: { error: unknown }) { return error ? <div className="alert alert-error" role="alert">{error instanceof Error ? error.message : 'Something went wrong. Please try again.'}</div> : null; }
+function FormError({ error }: { error: unknown }) { return error ? <div className="alert alert-error" role="alert">{typeof error === 'string' ? error : error instanceof Error ? error.message : 'Something went wrong. Please try again.'}</div> : null; }
 function AuthLayout({ title, subtitle, children, footer }: { title: string; subtitle: string; children: React.ReactNode; footer: React.ReactNode }) { return <div className="auth-page"><div className="auth-side"><Link className="brand brand-inverse" to="/login"><span className="brand-mark">A</span><span>anyware</span></Link><div className="auth-promo"><span className="eyebrow">MAKE ROOM FOR WHAT MATTERS</span><h1>Good work<br/>starts with<br/><em>a clear mind.</em></h1><p>A calmer place to turn your priorities into progress.</p></div><div className="auth-side-foot">TASK MANAGEMENT, MADE HUMAN</div></div><div className="auth-content"><div className="auth-card"><span className="eyebrow">WELCOME TO ANYWARE</span><h2>{title}</h2><p className="muted">{subtitle}</p>{children}<div className="auth-footer">{footer}</div></div></div></div>; }
 
 export function Login() {

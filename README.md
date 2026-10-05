@@ -100,10 +100,13 @@ The frontend has no API URL embedded in components. A sample environment file is
 - Email: `admin@example.com` (unless overridden with `SeedAdmin:Email`)
 - Password: the value you set for `SeedAdmin:Password` in .NET user secrets during setup. It is deliberately not committed to the repository. For an existing database, the seeder does not reset the password.
 
+If the existing administrator password is unavailable, `dotnet run --project tools/ResetAdminPassword` prompts for a replacement without echoing or saving it. The utility updates only the configured administrator and preserves the database and tasks.
+
 ### Changes since Stage 1
 
 - Added a restricted CORS policy for the configured frontend origin. The development fallback allows only `http://localhost:5173`; set `Cors:AllowedOrigins` for another exact origin.
 - Added readable JSON details for otherwise empty framework-generated 401, 403, and 404 responses, such as opening an admin endpoint as a normal user.
+- Aligned JWT validation's default issuer and audience with the token service, so tokens work when `Jwt:Issuer` is omitted.
 - Added an atomic, conditional database update for the background worker. It advances a task only if its persisted status is still `Pending`, so a concurrent user status update is not overwritten.
 - Enforced the task description maximum length (2,000 characters) on the API, matching the database limit and frontend validation.
 - Updated the existing Docker Compose stack with API and frontend services plus SQL Server and Redis health checks, allowing the full application to start together.
